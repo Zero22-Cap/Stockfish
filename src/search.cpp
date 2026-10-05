@@ -742,6 +742,8 @@ Value Search::Worker::search(
     // Do not tune these values. They are not intended for playing strength.
     const bool seekMate =
       std::abs(rootMoves[pvIdx].score) >= 750 + 220000 / (rootDepth * rootDepth);
+    // Outside of small endgames, search wider when seeking mate
+    const bool seekMateWide = seekMate && pos.count<ALL_PIECES>() > 5;
 
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
@@ -1350,6 +1352,10 @@ moves_loop:  // When in check, search starts here
 
         r -= moveCount * 65;
         r -= std::abs(correctionValue) / 26310;
+
+        // Reduce checks less when seeking mate
+        if (seekMateWide && givesCheck)
+            r -= 2048;
 
         // Increase reduction for cut nodes
         if (cutNode)
