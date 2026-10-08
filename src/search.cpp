@@ -1037,7 +1037,9 @@ Value Search::Worker::search(
         assert((ss - 1)->currentMove != Move::null());
 
         // Null move dynamic reduction based on depth
-        Depth R = 7 + depth / 3 + std::max((ss->staticEval - beta) / 256, 0);
+        // Every fourth thread reduces one ply more, every other fourth one ply less
+        Depth R = 7 + depth / 3 + std::max((ss->staticEval - beta) / 256, 0)
+                + int(threadIdx % 4 == 1) - int(threadIdx % 4 == 3);
         do_null_move(pos, st, ss);
 
         Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
