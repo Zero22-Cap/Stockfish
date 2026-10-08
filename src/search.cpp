@@ -1195,7 +1195,8 @@ moves_loop:  // When in check, search starts here
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
         {
             // Skip quiet moves if movecount exceeds our threshold
-            if (moveCount >= (3 + depth * depth) / (2 - improving))
+            // Later threads search more quiet moves before skipping
+            if (moveCount >= (3 + depth * depth) * (8 + int(threadIdx % 4)) / (8 * (2 - improving)))
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
