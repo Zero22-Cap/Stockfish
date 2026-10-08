@@ -1275,7 +1275,10 @@ moves_loop:  // When in check, search starts here
             && is_valid(ttData.value) && !is_decisive(ttData.value) && (ttData.bound & BOUND_LOWER)
             && ttData.depth >= depth - 3 && !is_shuffling(move, ss, pos) && !seekMate)
         {
-            Value singularBeta  = ttData.value - (59 + 66 * (ss->ttPv && !PvNode)) * depth / 63;
+            // Every fourth thread uses a wider singular margin, every other fourth a narrower one
+            int   threadMargin  = 8 * (int(threadIdx % 4 == 1) - int(threadIdx % 4 == 3));
+            Value singularBeta  =
+              ttData.value - (59 + 66 * (ss->ttPv && !PvNode) + threadMargin) * depth / 63;
             Depth singularDepth = newDepth / 2;
 
             ss->excludedMove = move;
