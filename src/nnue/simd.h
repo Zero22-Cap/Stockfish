@@ -93,7 +93,13 @@ using vec_i8_t = __m256i;
 
     #define vec_nnz(a) _mm512_cmpgt_epi32_mask(a, _mm512_setzero_si512())
 
-    #define NumRegistersSIMD 16
+    // Zen 5 runs 512-bit instructions at full width and is faster with a
+    // larger tile; Zen 4 and the Intel chips tested are faster with 8.
+    #ifdef USE_ZEN5
+        #define NumRegistersSIMD 16
+    #else
+        #define NumRegistersSIMD 8
+    #endif
     #define MaxChunkSize 64
 
 #elif USE_AVX2

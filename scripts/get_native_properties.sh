@@ -174,6 +174,19 @@ match_not_slow_bmi2_and_flags() {
 	match_flags "$@"
 }
 
+# AMD Zen 5 (family 26 = 1Ah) executes 512-bit instructions at full width.
+is_amd_zen5() (
+	[ -r "$cpuinfo_path" ] || exit 1
+	vendor_id=$(awk '/^vendor_id/{print $3; exit}' "$cpuinfo_path" 2>/dev/null)
+	cpu_family=$(awk '/^cpu family/{print $4; exit}' "$cpuinfo_path" 2>/dev/null)
+	[ "$vendor_id" = "AuthenticAMD" ] && [ "$cpu_family" = "26" ]
+)
+
+match_zen5_and_flags() {
+	is_amd_zen5 || return 1
+	match_flags "$@"
+}
+
 match_sse3_popcnt() {
 	has_flag popcnt || return 1
 	match_sse3
@@ -227,6 +240,7 @@ set_arch_x86_64() {
 	true_arch=$(
 		select_arch_from_table <<'EOF'
 # Strongest -> weakest (first match wins)
+x86-64-zen5|match_zen5_and_flags|avx512f avx512cd avx512vl avx512dq avx512bw avx512ifma avx512vbmi avx512vbmi2 avx512vpopcntdq avx512bitalg avx512vnni vpclmulqdq gfni vaes
 x86-64-avx512icl|match_flags|avx512f avx512cd avx512vl avx512dq avx512bw avx512ifma avx512vbmi avx512vbmi2 avx512vpopcntdq avx512bitalg avx512vnni vpclmulqdq gfni vaes
 x86-64-vnni512|match_flags|avx512vnni avx512dq avx512f avx512bw avx512vl
 x86-64-avx512|match_flags|avx512f avx512bw

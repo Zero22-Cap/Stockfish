@@ -66,11 +66,28 @@ DEFINE_BUILD(x86_64_avxvnni)
 DEFINE_BUILD(x86_64_avx512)
 DEFINE_BUILD(x86_64_vnni512)
 DEFINE_BUILD(x86_64_avx512icl)
+DEFINE_BUILD(x86_64_zen5)
 
 // AMD Excavator (family 15h) and Zen/Zen+/Zen2 (family 17h) implement pdep/pext via microcode.
 static bool has_slow_bmi2() {
     return __builtin_cpu_is("amd")
         && (__builtin_cpu_is("bdver4") || __builtin_cpu_is("znver1") || __builtin_cpu_is("znver2"));
+}
+
+// AMD Zen 5 (family 1Ah) executes 512-bit instructions at full width, while Zen 4
+// splits them in two halves; the two prefer different NNUE tile sizes.
+// TODO: Zen 5 parts running 512-bit instructions at half width (some mobile chips,
+// or a BIOS setting) probably prefer the avx512icl build, but the CPUID bit that
+// reports this is not confirmed yet, so for now they get the zen5 build.
+static bool is_amd_zen5() {
+    unsigned eax, ebx, ecx, edx;
+    if (!__builtin_cpu_is("amd") || !__get_cpuid(1, &eax, &ebx, &ecx, &edx))
+        return false;
+
+    unsigned family = (eax >> 8) & 0xF;
+    if (family == 0xF)
+        family += (eax >> 20) & 0xFF;
+    return family == 0x1A;
 }
 
 struct CpuFeatures {
@@ -149,6 +166,9 @@ static int dispatch(const CpuFeatures& f, int argc, char* argv[]) {
         || !f.vaes             //
     )
         return entry_x86_64_vnni512(argc, argv);
+
+    if (is_amd_zen5())
+        return entry_x86_64_zen5(argc, argv);
 
     return entry_x86_64_avx512icl(argc, argv);
 }
