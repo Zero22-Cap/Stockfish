@@ -1,0 +1,14 @@
+2x2 on 7700X, all vs master 16 registers, started 2026-10-16 11:46
+== 8-registers-only
+A) one at a time, bench 16 1 13: n=30  base 2,107,814 nps  test 2,173,165 nps  speedup +3.113% +/- 0.613% (95%)
+A) one at a time, bench 16 1 16: n=20  base 1,976,556 nps  test 2,036,075 nps  speedup +3.014% +/- 0.628% (95%)
+B) 8 at once (all physical cores busy), bench 16 1 16: n=72  base 1,688,784 nps  test 1,731,295 nps  speedup +2.530% +/- 0.604% (95%)
+== pair-int8-only
+A) one at a time, bench 16 1 13: n=30  base 2,112,880 nps  test 2,154,610 nps  speedup +1.977% +/- 0.245% (95%)
+A) one at a time, bench 16 1 16: n=20  base 1,966,477 nps  test 2,000,092 nps  speedup +1.712% +/- 0.515% (95%)
+B) 8 at once (all physical cores busy), bench 16 1 16: n=72  base 1,597,366 nps  test 1,602,718 nps  speedup +0.604% +/- 1.708% (95%)
+== both
+A) one at a time, bench 16 1 13: n=30  base 2,120,268 nps  test 2,182,625 nps  speedup +2.945% +/- 0.295% (95%)
+A) one at a time, bench 16 1 16: n=20  base 1,986,410 nps  test 2,043,789 nps  speedup +2.890% +/- 0.522% (95%)
+B) 8 at once (all physical cores busy), bench 16 1 16: n=72  base 1,712,108 nps  test 1,755,482 nps  speedup +2.545% +/- 0.271% (95%)
+done 11:59

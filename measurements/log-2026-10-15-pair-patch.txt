@@ -1,0 +1,12 @@
+speed patch 6ad905ae, 2026-10-15T00:44:53
+ayush built=True bench=1559611 (master 1559611)
+ayush8 built=True bench=1559611 (master 1559611)
+== patch as posted vs plain master
+A) one at a time, bench 16 1 13: n=60  base 2,141,771 nps  test 2,161,803 nps  speedup +0.943% +/- 0.287% (95%)
+A) one at a time, bench 16 1 16: n=40  base 2,003,899 nps  test 2,028,566 nps  speedup +1.232% +/- 0.191% (95%)
+B) 8 at once (all physical cores busy), bench 16 1 16: n=152  base 1,737,965 nps  test 1,749,245 nps  speedup +0.645% +/- 0.181% (95%)
+== patch + block size 8 vs master + block size 8
+A) one at a time, bench 16 1 13: n=60  base 2,203,387 nps  test 2,186,474 nps  speedup -0.762% +/- 0.244% (95%)
+A) one at a time, bench 16 1 16: n=40  base 2,074,325 nps  test 2,059,987 nps  speedup -0.690% +/- 0.162% (95%)
+B) 8 at once (all physical cores busy), bench 16 1 16: n=152  base 1,789,109 nps  test 1,778,359 nps  speedup -0.597% +/- 0.214% (95%)
+done 2026-10-15T01:03:12
