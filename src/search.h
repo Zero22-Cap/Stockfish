@@ -388,6 +388,13 @@ class Worker {
     Depth     rootDepth;
     bool      seekMate = false;
 
+    bool             tbFilter      = false;
+    int              tbFilterDepth = 0;
+    int              tbFilterLimit = 0;         // largest piece count the filter probes
+    Color            tbWinner      = COLOR_NB;  // side winning at the root per the tablebases
+    std::vector<u64> tbCache;                   // remembered verdicts, keyed by position
+    int              tb_verdict(Position& pos);
+
     PVMoves lastIterationIdxPV;
 
     usize                     threadIdx, numaThreadIdx, numaTotal;

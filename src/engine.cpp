@@ -110,6 +110,14 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
 
     options.add("nodestime", Option(0, 0, 10000));
 
+    // TBFilter: inside the tablebases, prune only the winning side's moves that lose
+    // the win, and keep searching for a real mate instead of stopping at a TB score.
+    options.add("TBFilter", Option(false));
+    options.add("TBFilterDepth", Option(4, 0, 100));
+
+    // Ignore50MoveRule: count mates longer than the 50-move rule allows, as DTM does.
+    options.add("Ignore50MoveRule", Option(false));
+
     options.add("UCI_Chess960", Option(false));
 
     options.add("UCI_LimitStrength", Option(false));
