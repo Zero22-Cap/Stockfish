@@ -46,3 +46,27 @@ python matecheck.py ... --engine tb-filter/stockfish.exe --engineOpts '{"Ignore5
 ```
 
 Raw outputs: `matetrack-*.txt`.
+
+## Long tablebase endgames (earlier build, 2026-10-06)
+
+260 positions with 4 to 7 pieces from the Syzygy max-DTZ list, all decisive, where engines found
+mates of 21 to 89 moves (`long-endgames/positions.jsonl`; the mate lengths are upper bounds from
+earlier searches, only their sign is used). For each position: wall time until the engine first
+announces a mate for the winning side, 1 thread per engine, 16 positions in parallel, hash 512 MB
+(`long-endgames/ttm3.py`). Syzygy: complete 6-piece set plus some 7-piece tables.
+
+These runs used an earlier build of the same filter (same Step 7a logic and verdict cache) on
+master 49ea5ded, inside a personal build whose other options were off. Per-position results are in
+`long-endgames/*.json`.
+
+| Setting | Solved in 20 s | Solved in 120 s |
+|---|---:|---:|
+| Syzygy (normal probing) | 23 | 35 |
+| no TB | 29 | |
+| TBFilter, Syzygy | 28 | |
+| Ignore50MoveRule, Syzygy | 25 | |
+| Ignore50MoveRule, no TB | 29 | 50 |
+| TBFilter + Ignore50MoveRule, Syzygy | **33** | **53** |
+
+In these long endgames normal Syzygy probing finds the fewest mates. Here, unlike on matetrack, the
+combination with Ignore50MoveRule matters: many of these mates are longer than 50 moves.
