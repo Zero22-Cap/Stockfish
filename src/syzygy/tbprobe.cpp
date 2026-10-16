@@ -1912,7 +1912,8 @@ Config Tablebases::rank_root_moves(const OptionsMap&            options,
         return config;
 
     config.rootInTB    = false;
-    config.useRule50   = bool(options["Syzygy50MoveRule"]);
+    Ignore50MoveRule   = bool(options["Ignore50MoveRule"]);
+    config.useRule50   = bool(options["Syzygy50MoveRule"]) && !Ignore50MoveRule;
     config.probeDepth  = int(options["SyzygyProbeDepth"]);
     config.cardinality = int(options["SyzygyProbeLimit"]);
 
@@ -1933,13 +1934,13 @@ Config Tablebases::rank_root_moves(const OptionsMap&            options,
 
         // Rank moves using DTZ tables, bail out if time_abort flags zeitnot
         config.rootInTB =
-          root_probe(pos, rootMoves, options["Syzygy50MoveRule"], rankDTZ, time_abort);
+          root_probe(pos, rootMoves, config.useRule50, rankDTZ, time_abort);
 
         if (!config.rootInTB && !time_abort())
         {
             // DTZ tables are missing; try to rank moves using WDL tables
             dtz_available   = false;
-            config.rootInTB = root_probe_wdl(pos, rootMoves, options["Syzygy50MoveRule"]);
+            config.rootInTB = root_probe_wdl(pos, rootMoves, config.useRule50);
         }
     }
 

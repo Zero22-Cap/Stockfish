@@ -84,6 +84,10 @@ struct PositionSetError: std::runtime_error {
 // pieces, side to move, hash keys, castling info, etc. Important methods are
 // do_move() and undo_move(), used by the search to update node info when
 // traversing the search tree.
+// When set, the 50-move rule is ignored in draw detection, hash keys, stored
+// mate scores and evaluation damping.
+inline bool Ignore50MoveRule = false;
+
 class Position {
    public:
     static void init();
@@ -326,7 +330,9 @@ inline Key Position::key() const { return adjust_key50(st->key); }
 
 template<bool AfterMove>
 inline Key Position::adjust_key50(Key k) const {
-    return st->rule50 < 14 - AfterMove ? k : k ^ make_key((st->rule50 - (14 - AfterMove)) / 8);
+    return Ignore50MoveRule || st->rule50 < 14 - AfterMove
+           ? k
+           : k ^ make_key((st->rule50 - (14 - AfterMove)) / 8);
 }
 
 inline Key Position::pawn_key() const { return st->pawnKey; }

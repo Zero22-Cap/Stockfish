@@ -76,7 +76,8 @@ Value scale_evaluation(Value nnue, int optimism, const Position& pos) {
     v += i64(material) * v / 90649;
 
     // Damp down the evaluation linearly when shuffling
-    v -= v * pos.rule50_count() / 189;
+    if (!Ignore50MoveRule)
+        v -= v * pos.rule50_count() / 189;
 
     // Guarantee that the evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);

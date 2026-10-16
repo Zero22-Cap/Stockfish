@@ -173,6 +173,28 @@ bool is_shuffling(Move move, Stack* const ss, const Position& pos) {
 
 }  // namespace
 
+// Tablebase verdict for the side to move, remembered per position: 3 win, 2 draw,
+// 1 loss, 0 if the tablebase could not be read. Wins and losses that only the
+// 50-move rule would spoil count as wins and losses.
+int Search::Worker::tb_verdict(Position& pos) {
+    if (tbCache.empty())
+        tbCache.assign(usize(1) << 21, 0);
+
+    const u64 k = u64(pos.state()->key);
+    u64&      e = tbCache[k >> 43];
+    if ((e & 3) && ((e ^ k) >> 2) == 0)
+        return int(e & 3);
+
+    TB::ProbeState err;
+    TB::WDLScore   wdl = TB::probe_wdl(pos, &err);
+    if (err == TB::ProbeState::FAIL)
+        return 0;
+
+    const int v = wdl > TB::WDLDraw ? 3 : wdl < TB::WDLDraw ? 1 : 2;
+    e           = (k & ~u64(3)) | u64(v);
+    return v;
+}
+
 Search::Worker::Worker(SharedState&                   sharedState,
                        std::unique_ptr<SearchManager> sm,
                        usize                          threadId,
@@ -280,6 +302,19 @@ void Search::Worker::start_searching() {
 // depth until the allocated thinking time has been consumed, the user stops
 // the search, or the maximum search depth is reached.
 bool Search::Worker::iterative_deepening() {
+
+    tbFilter      = bool(options["TBFilter"]);
+    tbFilterDepth = int(options["TBFilterDepth"]);
+    tbFilterLimit = std::min(int(TB::MaxCardinality), int(options["SyzygyProbeLimit"]));
+    tbWinner      = COLOR_NB;
+    if (tbFilter && rootPos.count<ALL_PIECES>() <= tbFilterLimit
+        && !rootPos.can_castle(ANY_CASTLING))
+    {
+        TB::ProbeState err;
+        TB::WDLScore   wdl = TB::probe_wdl(rootPos, &err);
+        if (err != TB::ProbeState::FAIL && wdl != TB::WDLDraw)
+            tbWinner = wdl > TB::WDLDraw ? rootPos.side_to_move() : ~rootPos.side_to_move();
+    }
 
     SearchManager* mainThread = (is_mainthread() ? main_manager() : nullptr);
 
@@ -910,7 +945,7 @@ Value Search::Worker::search(
 
             // Partial workaround for the graph history interaction problem.
             // For high rule50 counts don't produce transposition table cutoffs.
-            if (pos.rule50_count() < 96)
+            if (Ignore50MoveRule || pos.rule50_count() < 96)
             {
                 if (depth >= 7 && ttData.move && pos.legal(ttData.move)
                     && !is_decisive(ttData.value))
@@ -943,8 +978,23 @@ Value Search::Worker::search(
         }
     }
 
+    // Step 7a. TBFilter. Only the winning side's moves are cut, so no mate is invented:
+    // a drawn position holds no forced mate for either side, and if the side that won
+    // at the root now faces a position won for the opponent, its last move threw the
+    // win away. Otherwise the search goes on to a real mate, without TB cutoffs.
+    if (tbFilter && !rootNode && !excludedMove && depth >= tbFilterDepth
+        && (tbWinner == COLOR_NB || us != tbWinner) && pos.count<ALL_PIECES>() <= tbFilterLimit
+        && !pos.can_castle(ANY_CASTLING))
+    {
+        const int verdict = tb_verdict(pos);
+        if (verdict == 2)
+            return VALUE_DRAW;
+        if (verdict == 3 && tbWinner != COLOR_NB)
+            return VALUE_TB_WIN_IN_MAX_PLY;
+    }
+
     // Step 7. Tablebases probe
-    if (!rootNode && !excludedMove && tbConfig.cardinality)
+    if (!rootNode && !excludedMove && tbConfig.cardinality && !tbFilter)
     {
         int piecesCount = pos.count<ALL_PIECES>();
 
@@ -1955,11 +2005,11 @@ Value value_from_tt(Value v, int ply, int r50c) {
     if (is_win(v))
     {
         // Downgrade a potentially false mate score
-        if (is_mate(v) && VALUE_MATE - v > 100 - r50c)
+        if (!Ignore50MoveRule && is_mate(v) && VALUE_MATE - v > 100 - r50c)
             return VALUE_TB_WIN_IN_MAX_PLY - 1;
 
         // Downgrade a potentially false TB score
-        if (VALUE_TB - v > 100 - r50c)
+        if (!Ignore50MoveRule && VALUE_TB - v > 100 - r50c)
             return VALUE_TB_WIN_IN_MAX_PLY - 1;
 
         return v - ply;
@@ -1969,11 +2019,11 @@ Value value_from_tt(Value v, int ply, int r50c) {
     if (is_loss(v))
     {
         // Downgrade a potentially false mate score
-        if (is_mated(v) && VALUE_MATE + v > 100 - r50c)
+        if (!Ignore50MoveRule && is_mated(v) && VALUE_MATE + v > 100 - r50c)
             return VALUE_TB_LOSS_IN_MAX_PLY + 1;
 
         // Downgrade a potentially false TB score
-        if (VALUE_TB + v > 100 - r50c)
+        if (!Ignore50MoveRule && VALUE_TB + v > 100 - r50c)
             return VALUE_TB_LOSS_IN_MAX_PLY + 1;
 
         return v + ply;
@@ -2172,7 +2222,7 @@ void syzygy_extend_pv(const OptionsMap&         options,
 
     auto t_start      = std::chrono::steady_clock::now();
     int  moveOverhead = int(options["Move Overhead"]);
-    bool rule50       = bool(options["Syzygy50MoveRule"]);
+    bool rule50       = bool(options["Syzygy50MoveRule"]) && !Ignore50MoveRule;
 
     // Do not use more than moveOverhead / 2 ms, if time management is active.
     // Under 'nodestime' the pos.do_move() calls come for free.
