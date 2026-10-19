@@ -39,6 +39,7 @@
 #include "position.h"
 #include "search.h"
 #include "shm.h"
+#include "syzygy/dtm.h"
 #include "syzygy/tbprobe.h"
 #include "types.h"
 #include "uci.h"
@@ -139,6 +140,16 @@ Engine::Engine(std::optional<std::filesystem::path> path) :
     options.add("Syzygy50MoveRule", Option(true));
 
     options.add("SyzygyProbeLimit", Option(7, 0, 7));
+
+#ifdef USE_CHESSTB_DTM
+    // DTMPath: chesstb tables (folder with wdl/ and dtm/). Only the root position and the
+    // displayed line are probed: exact mate scores and lines when the root is in the tables.
+    options.add(  //
+      "DTMPath", Option("", [](const Option& o) {
+          DTM::init(o);
+          return std::nullopt;
+      }));
+#endif
 
     options.add(  //
       "EvalFile", Option(EvalFileDefaultName, [this](const Option& o) {

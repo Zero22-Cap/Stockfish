@@ -42,6 +42,7 @@
 #include "nnue/network.h"
 #include "nnue/nnue_accumulator.h"
 #include "position.h"
+#include "syzygy/dtm.h"
 #include "syzygy/tbprobe.h"
 #include "thread.h"
 #include "timeman.h"
@@ -2374,8 +2375,21 @@ void SearchManager::output_pv(Search::Worker&           worker,
         if (v == -VALUE_INFINITE)
             v = VALUE_ZERO;
 
-        bool isTBScore = worker.tbConfig.rootInTB && !is_mate_or_mated(v);
+        // With the root in the DTM tables, the score and the line come from them
+        bool isDTM     = worker.tbConfig.rootInDTM && rootMoves[i].dtmExact;
+        bool isTBScore = isDTM || (worker.tbConfig.rootInTB && !is_mate_or_mated(v));
         v              = isTBScore ? rootMoves[i].tbScore : v;
+
+        if (isDTM && is_decisive(v))
+        {
+            if (rootMoves[i].dtmPv.empty())
+                DTM::fill_pv(pos, rootMoves[i]);
+            if (!rootMoves[i].dtmPv.empty())
+            {
+                rootMoves[i].pv.assign(rootMoves[i].dtmPv.begin(), rootMoves[i].dtmPv.end());
+                usePreviousScore = false;
+            }
+        }
 
         // Potentially correct and extend the PV, and in exceptional cases v.
         // Previous PVs have already been extended. Inexact flags indicate an unreliable PV.

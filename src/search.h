@@ -163,7 +163,9 @@ struct RootMove {
     int         selDepth           = 0;
     int         tbRank             = 0;
     Value       tbScore;
+    bool        dtmExact           = false;  // tbScore is an exact DTM result
     RootPVMoves pv, previousPV;
+    std::vector<Move> dtmPv;  // line to mate from the DTM tables, filled when first shown
 };
 
 using RootMoves = std::vector<RootMove>;

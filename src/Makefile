@@ -81,7 +81,7 @@ SRCS = attacks.cpp benchmark.cpp bitboard.cpp evaluate.cpp main.cpp \
 	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \
 	nnue/nnue_accumulator.cpp nnue/nnue_misc.cpp nnue/network.cpp \
 	nnue/features/k32q2.cpp nnue/features/full_threats.cpp nnue/features/pp_3wide.cpp \
-	engine.cpp score.cpp memory.cpp
+	engine.cpp score.cpp memory.cpp syzygy/dtm.cpp
 
 OTHER_SRCS = universal/entry_x86.cpp universal/entry_arm64.cpp universal/entry_riscv64.cpp universal/nnue_embed.cpp
 
@@ -90,7 +90,7 @@ HEADERS = attacks.h benchmark.h bitboard.h evaluate.h misc.h movegen.h movepick.
 		nnue/features/pp_3wide.h nnue/layers/affine_transform.h nnue/layers/affine_transform_sparse_input.h \
 		nnue/layers/clipped_relu.h nnue/layers/sqr_clipped_relu.h nnue/nnue_accumulator.h \
 		nnue/nnue_architecture.h nnue/nnue_common.h nnue/nnue_feature_transformer.h nnue/simd.h \
-		nnue/nnz_helper.h position.h search.h syzygy/tbprobe.h thread.h thread_native.h timeman.h \
+		nnue/nnz_helper.h position.h search.h syzygy/tbprobe.h syzygy/dtm.h thread.h thread_native.h timeman.h \
 		tt.h tune.h types.h uci.h ucioption.h perft.h nnue/network.h engine.h score.h numa.h memory.h shm.h shm_unix.h
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
@@ -501,6 +501,13 @@ endif
 CXXFLAGS = $(ENV_CXXFLAGS) -Wall -Wcast-qual -fno-exceptions -std=c++17 $(EXTRACXXFLAGS)
 DEPENDFLAGS = $(ENV_DEPENDFLAGS) -std=c++17
 LDFLAGS = $(ENV_LDFLAGS) $(EXTRALDFLAGS)
+
+# Optional exact DTM for the root and the displayed line from chesstb tables:
+# CHESSTB_DTM=<path to libchesstb_dtm.a> (see scripts/chesstb_dtm/build.sh)
+ifneq ($(CHESSTB_DTM),)
+	CXXFLAGS += -DUSE_CHESSTB_DTM
+	LDFLAGS += $(CHESSTB_DTM)
+endif
 
 ifeq ($(COMP),)
 	COMP=gcc

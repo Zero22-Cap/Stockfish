@@ -41,6 +41,7 @@ namespace Stockfish::Tablebases {
 struct Config {
     int   cardinality = 0;
     bool  rootInTB    = false;
+    bool  rootInDTM   = false;
     bool  useRule50   = false;
     Depth probeDepth  = 0;
 };

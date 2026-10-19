@@ -36,6 +36,7 @@
 #include "memory.h"
 #include "movegen.h"
 #include "search.h"
+#include "syzygy/dtm.h"
 #include "syzygy/tbprobe.h"
 #include "timeman.h"
 #include "types.h"
@@ -318,6 +319,7 @@ void ThreadPool::start_thinking(const OptionsMap&  options,
             rootMoves.emplace_back(m);
 
     Tablebases::Config tbConfig = Tablebases::rank_root_moves(options, pos, rootMoves);
+    tbConfig.rootInDTM          = DTM::rank_root_moves(pos, rootMoves, !Ignore50MoveRule);
 
     // After ownership transfer 'states' becomes empty, so if we stop the search
     // and call 'go' again without setting a new position states.get() == nullptr.
