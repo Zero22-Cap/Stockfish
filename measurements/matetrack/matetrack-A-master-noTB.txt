@@ -1,0 +1,10 @@
+Loaded 6554 FENs with 6554 bm values, with |bm| (min avg max): 1 11 126.
+
+Matetrack started for master/stockfish.exe on matetrack/matetrack.epd with --nodes 1000000 ...
+
+
+Using master/stockfish.exe on matetrack/matetrack.epd with --nodes 1000000
+Engine ID:     Stockfish dev-20261017-effdc3fd
+Total FENs:    6554
+Found mates:   4000
+Best mates:    2699

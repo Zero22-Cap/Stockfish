@@ -1,0 +1,24 @@
+matetrack 1M nodes on effdc3fd, start 2026-10-19 01:57
+A-master-noTB: rc 0, 356 s | Found mates: 4000 Best mates: 2699 
+B-master-syzygy5: rc 0, 450 s | Found mates: 3799 Best mates: 2687 Found TB wins: 430 
+C-filter-syzygy5: rc 0, 418 s | Found mates: 3995 Best mates: 2730 Found TB wins: 8 
+D-filter-no50-syz5: rc 0, 386 s | Found mates: 4002 Best mates: 2717 Found TB wins: 11 
+E-no50-noTB: rc 0, 341 s | Found mates: 3956 Best mates: 2686 
+DONE 02:29
+matetrack DTM runs, start 2026-10-19 02:29
+F-filter-syzygy5-dtm: rc 0, 382 s | Found mates: 4003 Best mates: 2761 
+G-filter-no50-syz5-dtm: rc 0, 379 s | Found mates: 4013 Best mates: 2755 
+H-syzygy5-dtm: rc 0, 421 s | Found mates: 3808 Best mates: 2724 Found TB wins: 421 
+DONE matetrack DTM 02:49
+speed + eg-long on effdc3fd, start 2026-10-19 02:49
+speed noTB: 33 s | 260 positions, median nps 1568392, total nodes 775098570, total time 487.9 s
+speed syzygy6: 45 s | 260 positions, median nps 1233058, total nodes 774813984, total time 641.2 s
+speed filter-syz6: 44 s | 260 positions, median nps 1236501, total nodes 775327842, total time 627.0 s
+eg-long A-master-syzygy6: 963 s | 260 positions, solved 31 within 60s
+eg-long B-master-noTB: 958 s | 260 positions, solved 36 within 60s
+eg-long C-filter-syzygy6: 936 s | 260 positions, solved 34 within 60s
+eg-long D-filter-no50-syz6: 915 s | 260 positions, solved 44 within 60s
+eg-long E-no50-noTB: 950 s | 260 positions, solved 38 within 60s
+eg-long F-filter-no50-syz6-dtm: 903 s | 260 positions, solved 55 within 60s
+DONE speed + eg-long 04:25
+[chain 04:25] zen4 registers: master (16) vs zen5-1017 avx512icl build (8), speed_pair.py 60/40/20

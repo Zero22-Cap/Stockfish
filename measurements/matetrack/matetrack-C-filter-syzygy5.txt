@@ -1,0 +1,13 @@
+Loaded 6554 FENs with 6554 bm values, with |bm| (min avg max): 1 11 126.
+Additional generic engine options:  {'SyzygyProbeLimit': 5, 'TBFilter': True}
+
+Matetrack started for tb-filter-v2/stockfish.exe on matetrack/matetrack.epd with --nodes 1000000 --syzygyPath syzygy-3-4-5 ...
+
+Found 145 tablebases. Checking up to 1448 TB win PVs. This may take some time ...
+
+Using tb-filter-v2/stockfish.exe on matetrack/matetrack.epd with --nodes 1000000 --syzygyPath syzygy-3-4-5
+Engine ID:     Stockfish dev-20261017-effdc3fd
+Total FENs:    6554
+Found mates:   3995
+Best mates:    2730
+Found TB wins: 8
