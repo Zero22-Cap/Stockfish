@@ -1,0 +1,6 @@
+  depth 13 node counts (is_test, nodes): [(False, 1559611), (True, 1559611)]
+A) one at a time, bench 16 1 13: n=60  base 2,180,587 nps  test 2,190,881 nps  speedup +0.479% +/- 0.275% (95%)
+  depth 16 node counts (is_test, nodes): [(False, 7659485), (True, 7659485)]
+A) one at a time, bench 16 1 16: n=40  base 2,029,940 nps  test 2,047,173 nps  speedup +0.853% +/- 0.190% (95%)
+B) 8 at once (all physical cores busy), bench 16 1 16: n=152  base 1,776,536 nps  test 1,791,357 nps  speedup +0.849% +/- 0.296% (95%)
+total 505s
